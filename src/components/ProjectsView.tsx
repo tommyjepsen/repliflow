@@ -71,31 +71,27 @@ export function ProjectsView() {
           />
         </label>
 
-        {/* New project is the one action worth emphasising; the rest sit quietly beside it. */}
+        {/* New is the only action worth a word; the rest are icons off to the right. */}
         <div className="flex items-center gap-1">
           <Button size="sm" onClick={createProject}>
             <Plus /> New
           </Button>
-          <Button variant="ghost" size="sm" className="text-[11px]" onClick={duplicateProject}>
-            <Copy /> Duplicate
-          </Button>
-          <Tooltip label="Copy a share code for this canvas">
-            <Button variant="ghost" size="sm" className="text-[11px]" onClick={copyShare}>
-              {copied ? <Check className="text-emerald-400" /> : <Share2 />}
-              {copied ? 'Copied' : 'Share'}
-            </Button>
-          </Tooltip>
-          <Tooltip label="Save this canvas as a .repliflow.json file you can re-import">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[11px]"
+
+          <div className="ml-auto flex items-center gap-0.5">
+            <IconAction label="Duplicate this project" icon={Copy} onClick={duplicateProject} />
+            <IconAction
+              label="Copy a share code for this canvas"
+              icon={copied ? Check : Share2}
+              done={copied}
+              onClick={copyShare}
+            />
+            <IconAction
+              label="Download this canvas as a .repliflow.json file"
+              icon={saved === 'current' ? Check : FileDown}
+              done={saved === 'current'}
               onClick={() => download()}
-            >
-              {saved === 'current' ? <Check className="text-emerald-400" /> : <FileDown />}
-              {saved === 'current' ? 'Saved' : 'Download'}
-            </Button>
-          </Tooltip>
+            />
+          </div>
         </div>
 
         {error && <p className="text-[12px] text-red-400">{error}</p>}
@@ -166,6 +162,32 @@ export function ProjectsView() {
         ))}
       </div>
     </>
+  )
+}
+
+/** Square ghost button whose meaning lives in its tooltip. */
+function IconAction({
+  label,
+  icon: Icon,
+  onClick,
+  done,
+}: {
+  label: string
+  icon: typeof Copy
+  onClick: () => void
+  done?: boolean
+}) {
+  return (
+    <Tooltip label={label}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onClick}
+        className={cn('size-7 px-0', done && 'text-emerald-400 hover:text-emerald-400')}
+      >
+        <Icon />
+      </Button>
+    </Tooltip>
   )
 }
 
