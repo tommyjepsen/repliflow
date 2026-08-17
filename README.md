@@ -82,15 +82,19 @@ Chromium you can instead nominate a folder once and everything is written into a
 subfolder inside it. A plain `<a download>` cannot target a subfolder, so this uses the File
 System Access API and falls back to an ordinary download elsewhere (`src/lib/fs.ts`).
 
-## Sharing a canvas
+## Sharing and backing up a canvas
 
-The Projects panel copies the canvas as a single pasteable share code; the import button in the
-left rail takes one back in. Only
+The Projects panel copies the canvas as a single pasteable share code, or writes it to disk as a
+`<project>.repliflow.json` file — the **Download** button for the open canvas, the hover icon on
+any row for the others. The import button in the left rail takes either back in: paste the code,
+or open the file. Only
 the structure travels — prompts, model choices, settings and edges — never generated output or
 local asset keys, which mean nothing on another machine. Uploaded images are dropped too; a
 remote URL survives. Models or effects the receiving build doesn't know about are skipped and
 reported rather than failing the import, and every field is validated because a share code is
-untrusted input (`src/lib/share.ts`).
+untrusted input (`src/lib/share.ts`). The downloaded file is the same graph as readable JSON, so
+it is diffable and hand-editable; it goes to your nominated folder if you have one, otherwise to
+your normal downloads.
 
 ## Account and usage
 

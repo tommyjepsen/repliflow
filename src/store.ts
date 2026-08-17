@@ -25,11 +25,12 @@ import {
   newProjectId,
   rememberLastOpened,
   saveProject,
+  saveToDisk,
   type GalleryEntry,
   type ProjectMeta,
   type StoredProject,
 } from '@/lib/projects'
-import { encodeShare, parseShare } from '@/lib/share'
+import { encodeShare, encodeShareFile, parseShare, shareFilename } from '@/lib/share'
 import { getTemplate, type TemplateId } from '@/lib/templates'
 
 export type PromptNodeData = {
@@ -186,6 +187,11 @@ type State = {
   applyTemplate: (id: TemplateId, pos: { x: number; y: number }) => void
   /** Serialises the current canvas as a pasteable share code. */
   exportShare: () => string
+  /**
+   * Writes a project to disk as a `.repliflow.json` file. Defaults to the open
+   * canvas, including edits that have not autosaved yet.
+   */
+  downloadProject: (id?: string) => Promise<'folder' | 'downloads'>
   /** Imports a share code into a brand new project. */
   importShare: (code: string) => Promise<{ nodes: number; skipped: string[]; title: string }>
   updateNode: (id: string, patch: Record<string, unknown>) => void
@@ -532,6 +538,21 @@ export const useStore = create<State>((set, get) => ({
   exportShare: () => {
     const { title, nodes, edges } = get()
     return encodeShare(title, nodes, edges)
+  },
+
+  downloadProject: async (id) => {
+    const live = get()
+    let { title, nodes, edges } = live
+
+    if (id && id !== live.projectId) {
+      const stored = await loadProject(id)
+      if (!stored) throw new Error('That project is no longer stored')
+      ;({ title, nodes, edges } = stored)
+    }
+
+    const json = encodeShareFile(title, nodes, edges)
+    const blob = new Blob([json], { type: 'application/json' })
+    return saveToDisk(blob, shareFilename(title))
   },
 
   importShare: async (code) => {

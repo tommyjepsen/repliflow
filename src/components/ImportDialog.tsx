@@ -1,5 +1,5 @@
-import { Download, Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Download, FileUp, Loader2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { useStore } from '@/store'
@@ -16,6 +16,7 @@ export function ImportDialog({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [warning, setWarning] = useState('')
+  const fileInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -24,6 +25,17 @@ export function ImportDialog({
       setWarning('')
     }
   }, [open])
+
+  /** A downloaded `.repliflow.json` is just the graph, so it loads straight in. */
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return
+    setError('')
+    try {
+      setCode(await file.text())
+    } catch {
+      setError('That file could not be read')
+    }
+  }
 
   const submit = async () => {
     setBusy(true)
@@ -54,8 +66,9 @@ export function ImportDialog({
           Import a canvas
         </DialogTitle>
         <DialogDescription className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
-          Paste a share code. It arrives as a new project, so nothing open is overwritten.
-          Generated output is not included — only the nodes, prompts and settings.
+          Paste a share code, or open a downloaded <code>.repliflow.json</code> file. It arrives
+          as a new project, so nothing open is overwritten. Generated output is not included —
+          only the nodes, prompts and settings.
         </DialogDescription>
 
         <textarea
@@ -73,7 +86,21 @@ export function ImportDialog({
         {error && <p className="mt-2 text-[12px] text-red-400">{error}</p>}
         {warning && <p className="mt-2 text-[12px] text-amber-400">{warning}</p>}
 
-        <div className="mt-4 flex justify-end gap-2">
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={(e) => {
+              pickFile(e.target.files?.[0])
+              // Reset so picking the same file twice still fires a change.
+              e.target.value = ''
+            }}
+          />
+          <Button variant="ghost" className="mr-auto" onClick={() => fileInput.current?.click()}>
+            <FileUp /> Open file…
+          </Button>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {warning ? 'Done' : 'Cancel'}
           </Button>

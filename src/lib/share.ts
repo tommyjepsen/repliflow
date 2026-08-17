@@ -51,7 +51,7 @@ function fromBase64(encoded: string) {
   return new TextDecoder().decode(bytes)
 }
 
-export function encodeShare(title: string, nodes: AppNode[], edges: Edge[]) {
+function buildGraph(title: string, nodes: AppNode[], edges: Edge[]): SharedGraph {
   const indexById = new Map<string, number>()
   const shared: SharedNode[] = []
 
@@ -90,8 +90,29 @@ export function encodeShare(title: string, nodes: AppNode[], edges: Edge[]) {
     .map((edge) => [indexById.get(edge.source), indexById.get(edge.target)])
     .filter((pair): pair is [number, number] => pair[0] !== undefined && pair[1] !== undefined)
 
-  const graph: SharedGraph = { v: 1, title, nodes: shared, edges: sharedEdges }
-  return PREFIX + toBase64(JSON.stringify(graph))
+  return { v: 1, title, nodes: shared, edges: sharedEdges }
+}
+
+export function encodeShare(title: string, nodes: AppNode[], edges: Edge[]) {
+  return PREFIX + toBase64(JSON.stringify(buildGraph(title, nodes, edges)))
+}
+
+/**
+ * The same graph as a share code, but as readable JSON for a file on disk.
+ * `parseShare` accepts raw JSON, so a downloaded file imports as-is.
+ */
+export function encodeShareFile(title: string, nodes: AppNode[], edges: Edge[]) {
+  return JSON.stringify(buildGraph(title, nodes, edges), null, 2)
+}
+
+/** `my project` → `my-project.repliflow.json`. */
+export function shareFilename(title: string) {
+  const slug =
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'untitled'
+  return `${slug}.repliflow.json`
 }
 
 // ---- Decoding -------------------------------------------------------------
