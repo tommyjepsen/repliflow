@@ -1,0 +1,194 @@
+@import 'tailwindcss';
+@import '@xyflow/react/dist/style.css';
+
+@layer base {
+  /*
+   * Dark is the design's home — a canvas app where the generated images are the
+   * content. Light is a full re-pick of the greys, not an inversion. The theme is
+   * always stamped onto <html data-theme> by the store, so there is no
+   * prefers-color-scheme query here; "system" is resolved in JS.
+   */
+  :root {
+    color-scheme: dark;
+
+    --background: #08080a;
+    --foreground: #ededef;
+
+    --rail: #0e0e11;
+    --panel: #1a1a1d;
+    --panel-hover: #232327;
+    --card: #141417;
+
+    --border: #2a2a2f;
+    --border-strong: #3a3a41;
+    /* Selected nodes and focused fields: a neutral lift, never the accent. */
+    --border-active: rgb(255 255 255 / 0.2);
+    --grip: rgb(255 255 255 / 0.3);
+
+    --muted-foreground: #86868d;
+    /* One accent, used for connectors and for every interactive highlight. */
+    --accent: #df5c25;
+    --accent-dim: #8a3a17;
+
+    /* Connector-specific aliases, so node wiring reads as its own concern. */
+    --connector: var(--accent);
+    --connector-dim: var(--accent-dim);
+
+    --dots: #33333a;
+    --overlay: rgb(0 0 0 / 0.7);
+    --selection-foreground: #fff;
+
+    --radius: 10px;
+  }
+
+  :root[data-theme='light'] {
+    color-scheme: light;
+
+    --background: #f4f4f6;
+    --foreground: #17171a;
+
+    --rail: #ffffff;
+    --panel: #ffffff;
+    --panel-hover: #eeeef1;
+    --card: #fafafa;
+
+    --border: #e3e3e8;
+    --border-strong: #c8c8d0;
+    --border-active: rgb(0 0 0 / 0.22);
+    --grip: rgb(0 0 0 / 0.3);
+
+    --muted-foreground: #6b6b73;
+    --accent: #d1521d;
+    --accent-dim: #b0461a;
+
+    --dots: #cfcfd6;
+    --overlay: rgb(0 0 0 / 0.35);
+    --selection-foreground: #fff;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-rail: var(--rail);
+  --color-panel: var(--panel);
+  --color-panel-hover: var(--panel-hover);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-active: var(--border-active);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-connector: var(--connector);
+  --color-connector-dim: var(--connector-dim);
+  --color-overlay: var(--overlay);
+
+  --radius-base: var(--radius);
+
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-dim);
+    color: var(--selection-foreground);
+  }
+}
+
+@layer components {
+  /*
+   * Surfaces that float above the canvas: rail, sheet, toolbar, menus. Flat by
+   * design — separation comes from the border and the panel fill, not elevation.
+   */
+  .surface {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+}
+
+/* React Flow overrides — the library ships a light theme by default. */
+.react-flow {
+  --xy-background-color: var(--background);
+  --xy-edge-stroke-default: var(--connector-dim);
+  --xy-edge-stroke-selected-default: var(--connector);
+  --xy-handle-background-color-default: var(--background);
+  --xy-handle-border-color-default: var(--connector);
+}
+
+.react-flow__node {
+  cursor: default;
+}
+
+/* The pane is grab-to-pan, so it should read that way before the drag starts. */
+.react-flow__pane {
+  cursor: grab;
+}
+
+.react-flow__pane.dragging {
+  cursor: grabbing;
+}
+
+.react-flow__pane.selection {
+  cursor: crosshair;
+}
+
+.react-flow__handle {
+  width: 11px;
+  height: 11px;
+  border-width: 2px;
+}
+
+.react-flow__handle:hover {
+  background: var(--connector);
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+/* Thin scrollbars inside panels and menus. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Tooltips fade in fast — long enough to read as motion, not as a wait. */
+.tooltip-content[data-state='delayed-open'],
+.tooltip-content[data-state='instant-open'] {
+  animation: tooltip-in 90ms ease-out;
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
